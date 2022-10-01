@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  api:
+    container_name: ts-sqlize
+    build:
+      context: ./
+      target: production
+    image: ts-sqlize
+    depends_on:
+      - db
+    ports:
+      - 5000:5000
+    environment:
+      NODE_ENV: production
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: test
+    links:
+      - db
+    volumes:
+      - .:/home/server
+    working_dir: /home/server
+    command: sh -c 'npm run tsc && node dist/server.js'
+  db:
+    container_name: pg-db
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=test
+    ports:
+      - '5432:5432'
+    volumes:
+      - db:/var/lib/postgresql/data
