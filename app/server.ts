@@ -4,11 +4,13 @@ import Http from 'http';
 import { Database } from './models';
 import rdsClient from './redis';
 import * as config from './config';
+import io from './socketio';
 dotenv.config();
 export class Server {
   expressApp = new ExpressApp();
   httpServer: Http.Server;
   redisClient = rdsClient;
+  socket_io = io;
 
   constructor() {
     this.httpServer = new Http.Server(this.expressApp.app);
@@ -20,6 +22,10 @@ export class Server {
       .then(this.connectRedis)
       .then(this.serverListen)
       .catch(this.serverErrorHandler);
+  };
+
+  bindSockets = () => {
+    return this.socket_io.attach(this.httpServer);
   };
 
   connectRedis = () => {

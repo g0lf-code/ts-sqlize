@@ -7,7 +7,7 @@ const socketAuth = require('socketio-auth');
 
 const io = new Server();
 
-io.attach(server.httpServer);
+// io.attach(server.httpServer);
 io.adapter(createAdapter(redisClient, redisClient.duplicate()));
 
 // dummy user verification
@@ -84,3 +84,11 @@ socketAuth(io, {
     }
   },
 });
+
+io.on('connect', (socket: any) => {
+  console.log(socket);
+  console.log('INCOMING SOCKET DATA');
+  // console.log(data);
+});
+
+export default io;

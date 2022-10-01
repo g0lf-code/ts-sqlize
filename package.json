@@ -10,7 +10,8 @@
     "logs": "docker-compose -f docker-compose.yml logs",
     "populate": "docker-compose -f docker-compose.yml exec db psql -f /tmp/example-data.sql test postgres",
     "stop": "docker-compose -f docker-compose.yml down",
-    "start": "nodemon ./app/server.ts"
+    "start": "nodemon ./app/server.ts",
+    "start:web": "serve client"
   },
   "keywords": [
     "example",
@@ -40,6 +41,7 @@
     "@types/redis": "^4.0.11",
     "@types/validator": "^10.11.0",
     "nodemon": "^2.0.20",
+    "serve": "^14.0.1",
     "ts-node": "^10.9.1",
     "tsc": "^2.0.4"
   }
