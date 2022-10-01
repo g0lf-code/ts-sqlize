@@ -4,7 +4,7 @@ import Class from './class';
 import Student from './student';
 import Teacher from './teacher';
 
-import database from '../config';
+import { database } from '../config';
 
 // Open database connection
 console.log();

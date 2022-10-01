@@ -2,7 +2,7 @@ import { ExpressApp } from './app';
 import Http from 'http';
 import { Database } from './models';
 import dotenv from 'dotenv';
-
+import * as config from './config';
 dotenv.config();
 export class Server {
   expressApp = new ExpressApp();
@@ -36,7 +36,7 @@ export class Server {
 
   serverListen = (): Http.Server => {
     console.log('making server listen to requests');
-    const { PORT: port, HOST: host } = process.env;
+    const { PORT: port, HOST: host } = config;
     console.log({ port, host });
     return this.httpServer.listen(port, (): void => {
       console.log(`Server is running on: http://${host}:${port}`);

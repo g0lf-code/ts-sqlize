@@ -1,4 +1,4 @@
-const database = {
+export const database = {
   host: process.env.DB_HOST || 'localhost',
   port: 5432,
   username: process.env.DB_USER || 'postgres',
@@ -11,4 +11,5 @@ const database = {
   },
 };
 
-export default database;
+export const HOST = process.env.HOST || '0.0.0.0';
+export const PORT = process.env.PORT || 5000;
