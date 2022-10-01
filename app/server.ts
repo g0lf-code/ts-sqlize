@@ -1,12 +1,14 @@
+import dotenv from 'dotenv';
 import { ExpressApp } from './app';
 import Http from 'http';
 import { Database } from './models';
-import dotenv from 'dotenv';
+import rdsClient from './redis';
 import * as config from './config';
 dotenv.config();
 export class Server {
   expressApp = new ExpressApp();
   httpServer: Http.Server;
+  redisClient = rdsClient;
 
   constructor() {
     this.httpServer = new Http.Server(this.expressApp.app);
@@ -15,8 +17,15 @@ export class Server {
   runServer = () => {
     console.log('running server..........');
     return this.databaseConnection()
+      .then(this.connectRedis)
       .then(this.serverListen)
       .catch(this.serverErrorHandler);
+  };
+
+  connectRedis = () => {
+    return this.redisClient
+      .connect()
+      .then(() => console.log('REDIS server cconnected..........'));
   };
 
   databaseConnection = () => {
@@ -51,3 +60,5 @@ export class Server {
 
 const server = new Server();
 server.runServer();
+
+export default server;

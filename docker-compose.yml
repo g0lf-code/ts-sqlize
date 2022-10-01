@@ -3,11 +3,12 @@ services:
   api:
     container_name: ts-sqlize
     build:
-      context: ./
+      context: ./dist
       target: production
     image: ts-sqlize
     depends_on:
       - db
+      - cache
     ports:
       - 5000:5000
     environment:
@@ -17,6 +18,9 @@ services:
       DB_USER: postgres
       DB_PASSWORD: postgres
       DB_NAME: test
+      REDIS_HOST: cache
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: password@123
     links:
       - db
     volumes:
@@ -35,3 +39,17 @@ services:
       - '5432:5432'
     volumes:
       - db:/var/lib/postgresql/data
+  cache:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass password@123
+    volumes:
+      - cache:/data
+volumes:
+  db:
+    driver: local
+
+  cache:
+    driver: local
