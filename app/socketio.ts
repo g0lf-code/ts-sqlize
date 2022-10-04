@@ -6,7 +6,10 @@ import { CORS_OPTIONS } from './app';
 
 const socketAuth = require('socketio-auth');
 
-const io = new Server({ cors: CORS_OPTIONS, transports: ['websocket'] });
+const io = new Server({
+  cors: CORS_OPTIONS,
+  // transports: ['websocket'],
+});
 
 // io.attach(server.httpServer);
 io.adapter(createAdapter(redisClient, redisClient.duplicate()));
@@ -44,19 +47,21 @@ socketAuth(io, {
 
     try {
       const user: any = await verifyUser(token);
-      const canConnect = await setAsync(
+      const canConnect = await redisClient.setEx(
         `users:${user.id}`,
-        socket.id,
-        'NX',
-        'EX',
-        30
+        30,
+        socket.id
       );
 
       if (!canConnect) {
-        return callback({ message: 'ALREADY_LOGGED_IN' });
+        // return callback({ message: 'ALREADY_LOGGED_IN' });
+        const retry = await redisClient.set(`users:${user.id}`, socket.id);
+        if (!retry) {
+          return callback({ message: 'ALREADY_LOGGED_IN' });
+        }
       }
 
-      socket.user = user;
+      socket.data.user = user;
 
       return callback(null, true);
     } catch (e) {
@@ -69,20 +74,19 @@ socketAuth(io, {
 
     socket.conn.on('packet', async (packet: any) => {
       if (socket.auth && packet.type === 'ping') {
-        await setAsync(
-          `users:${socket.user.id}`,
-          socket.id,
-          // 'XX',
-          'EX',
-          30
-        );
+        await redisClient.set(`users:${socket.user.id}`, socket.id, { EX: 30 });
       }
     });
   },
   disconnect: async (socket: any) => {
     console.log(`Socket ${socket.id} disconnected.`);
-    // console.log(socket);
+    console.log(socket.data);
     if (socket.user) {
+      console.log(
+        'deleting user key ==>> ',
+        socket.user.id,
+        `users:${socket.user.id}`
+      );
       await redisClient.del(`users:${socket.user.id}`);
     }
   },
@@ -97,14 +101,6 @@ io.on('connect', (socket: any) => {
   });
 
   // console.log(data);
-});
-
-io.on('authentication', (socket) => {
-  console.log(socket);
-});
-
-io.on('disconnect', (reason) => {
-  console.log(`Disconnected: ${reason}`);
 });
 
 export default io;
