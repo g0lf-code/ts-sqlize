@@ -1,4 +1,4 @@
-const socketUrl = 'http://localhost:5000/api';
+const socketUrl = 'http://localhost:5000';
 
 let connectButton;
 let disconnectButton;
@@ -11,6 +11,7 @@ const connect = () => {
 
   socket = io(socketUrl, {
     autoConnect: false,
+    origin: '*',
   });
 
   socket.on('connect', () => {

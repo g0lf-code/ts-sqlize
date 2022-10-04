@@ -21,17 +21,20 @@ export class Server {
     return this.databaseConnection()
       .then(this.connectRedis)
       .then(this.serverListen)
+      .then(this.bindSockets)
       .catch(this.serverErrorHandler);
   };
 
   bindSockets = () => {
+    console.log('BINDING WEB-SOCKETS.........');
     return this.socket_io.attach(this.httpServer);
   };
 
   connectRedis = () => {
     return this.redisClient
       .connect()
-      .then(() => console.log('REDIS server cconnected..........'));
+      .then(() => console.log('REDIS server cconnected..........'))
+      .catch((err) => err);
   };
 
   databaseConnection = () => {

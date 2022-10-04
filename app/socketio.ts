@@ -2,10 +2,11 @@ import { Server } from 'socket.io';
 import { createAdapter } from '@socket.io/redis-adapter';
 import redisClient, { setAsync } from './redis';
 import server from './server';
+import { CORS_OPTIONS } from './app';
 
 const socketAuth = require('socketio-auth');
 
-const io = new Server();
+const io = new Server({ cors: CORS_OPTIONS, transports: ['websocket'] });
 
 // io.attach(server.httpServer);
 io.adapter(createAdapter(redisClient, redisClient.duplicate()));
@@ -20,7 +21,7 @@ async function verifyUser(token: any) {
         {
           id: 1,
           name: 'mariotacke',
-          token: 'secret token',
+          token: 'secret',
         },
       ];
 
@@ -37,6 +38,8 @@ async function verifyUser(token: any) {
 
 socketAuth(io, {
   authenticate: async (socket: any, data: any, callback: any) => {
+    console.log('TRING TO AUTH THE SOCKET.......');
+    console.log(data);
     const { token } = data;
 
     try {
@@ -78,7 +81,7 @@ socketAuth(io, {
   },
   disconnect: async (socket: any) => {
     console.log(`Socket ${socket.id} disconnected.`);
-
+    // console.log(socket);
     if (socket.user) {
       await redisClient.del(`users:${socket.user.id}`);
     }
@@ -86,9 +89,22 @@ socketAuth(io, {
 });
 
 io.on('connect', (socket: any) => {
-  console.log(socket);
+  console.log(socket.id);
   console.log('INCOMING SOCKET DATA');
+
+  socket.on('disconnect', (reason: any) => {
+    console.log(`Disconnected Internal: ${reason}`);
+  });
+
   // console.log(data);
+});
+
+io.on('authentication', (socket) => {
+  console.log(socket);
+});
+
+io.on('disconnect', (reason) => {
+  console.log(`Disconnected: ${reason}`);
 });
 
 export default io;
